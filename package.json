@@ -1,0 +1,23 @@
+{
+  "name": "webhook-nodejs",
+  "version": "1.0.0",
+  "description": "Webhook example in Node.js for Corbado's webhook functionality",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/corbado/webhook-nodejs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/corbado/webhook-nodejs/issues"
+  },
+  "homepage": "https://github.com/corbado/webhook-nodejs#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
