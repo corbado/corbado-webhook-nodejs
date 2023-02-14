@@ -1,19 +1,29 @@
-var express = require('express');
-var app = express();
-var cors = require('cors');
+const express = require('express');
+const cors = require('cors');
 const basicAuth = require('./middleware/basic-auth');
-const webhook = require('./webhook.js');
+const WebhookController = require('./controller/WebhookController.js');
+
+const app = express();
 
 app.use(cors());
 app.use(basicAuth);
 app.use(express.json());
 
-app.post('/webhooks', webhook.webhook);
+app.post('/webhooks', WebhookController.handleWebhook);
+
+function startServer() {
+    const port = process.env.PORT || 8000;
+    app.listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+    });
+}
 
 
-app.listen(8000, function () {
-    console.log('Example app listening on port 8000!');
-});
+try {
+    startServer();
+} catch (err) {
+    console.error('Error starting server: ', err)
+}
 
 
 

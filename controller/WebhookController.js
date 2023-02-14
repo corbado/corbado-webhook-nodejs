@@ -1,6 +1,16 @@
 const assert = require('assert');
+const UserDatabase = require('./UserDatabase');
 
-exports.webhook = (req, res) => {
+const WEBHOOK_ACTION = {
+    AUTH_METHODS: 'authMethods',
+    PASSWORD_VERIFY: 'passwordVerify'
+};
+
+const ALLOWED_STATUS = ['exists', 'not_exists', 'blocked'];
+
+exports.handleWebhook = async (req, res) => {
+
+    const userDatabase = new UserDatabase();
 
     // Check if request has been made with POST. For Corbado webhooks
     // only POST is allowed/used.
@@ -8,34 +18,34 @@ exports.webhook = (req, res) => {
         return res.status(405).send('Method Not Allowed');
     }
 
+    const webhookAction = getAction(req);
 
     try {
         // Get the webhook action and act accordingly. Every Corbado
         // webhook has an action.
-        switch (getAction(req)) {
+        switch (webhookAction) {
 
             // Handle the "authMethods" action which basically checks
             // if a user exists on your side/in your database.
-            case "authMethods": {
-                let request = getAuthMethodsRequest(req);
+            case WEBHOOK_ACTION.AUTH_METHODS: {
+                const request = getAuthMethodsRequest(req);
 
                 // Now check if the given user/username exists in your
                 // database and send status. Implement getUserStatus()
                 // function below.
-                let status = getUserStatus(request.data.username);
+                const status = await userDatabase.getUserStatus(request.data.username);
                 sendAuthMethodsResponse(status, res);
                 break;
             }
 
             // Handle the "passwordVerify" action which basically checks
             // if the given username and password are valid.
-            case "passwordVerify": {
-
-                let request = getPasswordVerifyRequest(req);
+            case WEBHOOK_ACTION.PASSWORD_VERIFY: {
+                const request = getPasswordVerifyRequest(req);
 
                 // Now check if the given username and password is
                 // valid. Implement verifyPassword() function below.
-                if (verifyPassword(request.data.username, request.data.password) === true) {
+                if (await userDatabase.verifyPassword(request.data.username, request.data.password) === true) {
                     sendPasswordVerifyResponse(true, res);
                 } else {
                     sendPasswordVerifyResponse(false, res);
@@ -60,7 +70,7 @@ exports.webhook = (req, res) => {
         // code 500. For successful requests Corbado always
         // expects HTTP status code 200. Everything else
         // will be treated as error.
-        return res.status(500).send(error);
+        return res.status(500).send(error.message);
     }
 
 }
@@ -71,7 +81,6 @@ exports.webhook = (req, res) => {
  * @return {boolean}
  */
 function isPost(req) {
-
     return req.method === 'POST';
 }
 
@@ -82,65 +91,22 @@ function isPost(req) {
  */
 function getAction(req) {
 
-    const corbadoAction = req.get('X-Corbado-Action');
+    const corbadoAction = req.get('X-Corbado-Action') || '';
 
     if (!corbadoAction) {
         throw new Error('Missing action header (X-CORBADO-ACTION)');
     }
 
     switch (corbadoAction) {
-        case "authMethods":
-            return 'authMethods';
+        case WEBHOOK_ACTION.AUTH_METHODS:
+            return WEBHOOK_ACTION.AUTH_METHODS;
 
-        case "passwordVerify":
-            return 'passwordVerify';
+        case WEBHOOK_ACTION.PASSWORD_VERIFY:
+            return WEBHOOK_ACTION.PASSWORD_VERIFY;
 
         default:
             throw new Error(`Invalid action ("${corbadoAction}")`);
     }
-}
-
-/**
- * Checks if user exists on your side/in your database.
- *
- * !!! MUST BE IMPLEMENTED BY YOU !!!
- *
- * @param {string} username
- * @return {string}
- */
-function getUserStatus(username)  {
-    /////////////////////////////////////
-    // Implement your logic here!
-    ////////////////////////////////////
-
-    // Example
-    if (username === 'existing@existing.com') {
-        return 'exists';
-    }
-
-    return 'not_exists';
-}
-
-/**
- * Verify given username and password.
- *
- * !!! MUST BE IMPLEMENTED BY YOU !!!
- *
- * @param {string} username
- * @param {string} password
- * @return {boolean}
- */
-function verifyPassword(username, password)  {
-    /////////////////////////////////////
-    // Implement your logic here!
-    ////////////////////////////////////
-
-    // Example
-    if (username === 'existing@existing.com' && password === 'supersecret') {
-        return true;
-    }
-
-    return false;
 }
 
 /**
@@ -154,9 +120,8 @@ function getAuthMethodsRequest(req) {
 
     assert.ok(data.id, 'Missing id field');
     assert.ok(data.projectID, 'Missing projectID field');
-    assert.ok(data.action === 'authMethods', `Unexpected action: ${data.action}`);
+    assert.ok(data.action === WEBHOOK_ACTION.AUTH_METHODS, `Unexpected action: ${data.action}`);
     assert.ok(data.data.username, 'Missing username field');
-
 
     return {
         id: data.id,
@@ -174,21 +139,16 @@ function getAuthMethodsRequest(req) {
  * @param {string} status
  * @param {Object} res
  * @param {string} responseID
- * @param {boolean} exit
  */
 function sendAuthMethodsResponse(status, res, responseID = '') {
-    const allowedStatus = ['exists', 'not_exists', 'blocked'];
-    if (!allowedStatus.includes(status)) {
+    if (!ALLOWED_STATUS.includes(status)) {
         throw new Error('Invalid status value');
     }
 
-
-    const dataResponse = {};
-    dataResponse.status = status;
-
-    const response = {};
-    response.responseID = responseID;
-    response.data = dataResponse;
+    const response = {
+        responseID,
+        data: {status}
+    };
 
     sendResponse(response, res);
 }
@@ -200,26 +160,23 @@ function sendAuthMethodsResponse(status, res, responseID = '') {
  * @return {Object}
  */
 function getPasswordVerifyRequest(req) {
-
     const data = req.body;
     const requiredFields = ['id', 'projectID'];
     const requiredDataKeys = ['username', 'password'];
-    if (!requiredFields.every(key => key in data) ||
-        !requiredDataKeys.every(key => key in data.data)) {
+
+    if (!requiredFields.every(key => key in data) || !requiredDataKeys.every(key => key in data.data)) {
         throw new Error('Invalid request format');
     }
 
-    const dataRequest = {};
-    dataRequest.username = data.data.username;
-    dataRequest.password = data.data.password;
-
-    const request = {};
-    request.id = data.id;
-    request.projectID = data.projectID;
-    request.action = 'ACTION_AUTH_METHODS';
-    request.data = dataRequest;
-
-    return request;
+    return {
+        id: data.id,
+        projectID: data.projectID,
+        action: WEBHOOK_ACTION.PASSWORD_VERIFY,
+        data: {
+            username: data.data.username,
+            password: data.data.password
+        }
+    };
 }
 
 /**
@@ -230,17 +187,14 @@ function getPasswordVerifyRequest(req) {
  * @param {string} responseID
  */
 function sendPasswordVerifyResponse(success, res, responseID = '') {
-
-    const dataResponse = {};
-    dataResponse.success = success;
-
-    const response = {};
-    response.responseID = responseID;
-    response.data = dataResponse;
+    const response = {
+        responseID: responseID,
+        data: {success}
+    };
 
     sendResponse(response, res);
-
 }
+
 
 /**
  * Sends response
