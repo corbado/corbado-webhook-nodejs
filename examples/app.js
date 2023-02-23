@@ -2,6 +2,10 @@ const express = require('express');
 const {Webhook, webhookMiddleware} = require('webhook-nodejs');
 const webhook = new Webhook();
 
+const EXISTS = 'exists';
+const NOT_EXISTS = 'not_exists';
+const BLOCKED = 'blocked';
+
 const app = express();
 app.use(express.json());
 
@@ -92,8 +96,7 @@ function verifyPassword(username, password) {
     // Implement your logic here!
     ////////////////////////////////////
 
-    // Example
-    return username === 'existing@existing.com' && password === 'supersecret';
+    return false;
 }
 
 /**
@@ -111,10 +114,10 @@ function getUserStatus(username) {
 
     // Example
     if (username === 'existing@existing.com') {
-        return 'exists';
+        return EXISTS;
     }
 
-    return 'not_exists';
+    return NOT_EXISTS;
 }
 
 

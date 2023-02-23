@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "webhook-nodejs": "file:../lib/webhook-nodejs-1.0.0.tgz"
   }
 }
