@@ -8,17 +8,7 @@ The package handles webhooks authentication and takes care of the correct format
 Run the following command in your project root directory:
 
 ```
-npm install webhook-nodejs --save
-```
-
-
-
-# Start the sample application
-To start the sample application, run the following commands in the `/examples` directory:
-
-```
-npm install
-node app.js
+npm install corbado-webhook --save
 ```
 
 # Documentation

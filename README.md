@@ -8,7 +8,7 @@ The package handles webhooks authentication and takes care of the correct format
 Run the following command in your project root directory:
 
 ```
-npm install webhook-nodejs --save
+npm install corbado-webhook --save
 ```
 
 
