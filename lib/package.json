@@ -10,6 +10,12 @@
     "type": "git",
     "url": "git+https://github.com/corbado/corbado-webhook-nodejs.git"
   },
+  "keywords": [
+    "passkeys",
+    "authentication",
+    "webhooks",
+    "fido2"
+  ],
   "author": "Vincent Delitz",
   "license": "ISC",
   "bugs": {
