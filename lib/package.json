@@ -1,8 +1,8 @@
 {
-  "name": "webhook-nodejs",
+  "name": "corbado-webhook",
   "version": "1.0.0",
   "description": "Webhook package in Node.js for Corbado's webhook functionality",
-  "main": "webhook.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

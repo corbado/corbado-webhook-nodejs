@@ -1,5 +1,5 @@
 const express = require('express');
-const {Webhook, webhookMiddleware} = require('webhook-nodejs');
+const {Webhook, webhookMiddleware} = require('corbado-webhook');
 const webhook = new Webhook();
 
 const EXISTS = 'exists';

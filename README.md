@@ -8,23 +8,9 @@ The package handles webhooks authentication and takes care of the correct format
 Run the following command in your project root directory:
 
 ```
-npm install webhook-nodejs
+npm install webhook-nodejs --save
 ```
 
-Currently, the package is not yet published to the npm registry. To use it locally follow these steps:
-
-1. Navigate to the root directory of the npm package and run:
-```
-npm pack
-```
-2. In the project, where you want to use the package, run the following command to install the `.tgz` file, which was created in the previous step:
-```
-npm install /path/to/your/webhook-nodejs.tgz
-```
-3. In your project, import the package with the following command:
-```
-const {Webhook, webhookMiddleware} = require('webhook-nodejs');
-```
 
 
 # Start the sample application
